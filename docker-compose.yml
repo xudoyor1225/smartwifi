@@ -13,24 +13,36 @@ services:
     networks:
       - smartwifi_net
 
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: smartwifi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - smartwifi_net
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    # Ports are not strictly needed here since frontend proxies requests internally,
-    # but we map it just in case direct API access is required from host.
     ports:
       - "8000:8000"
     environment:
       - ENVIRONMENT=production
       - JWT_SECRET_KEY=yoursecretkeyhere_change_it_in_prod
-      - DATABASE_URL=sqlite+aiosqlite:////app/data/smartwifi.db
-      - DATABASE_URL_SYNC=sqlite:////app/data/smartwifi.db
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@db:5432/smartwifi
+      - DATABASE_URL_SYNC=postgresql://postgres:postgrespassword@db:5432/smartwifi
       - MIKROTIK_HOST=192.168.88.1
       - MIKROTIK_USER=admin
       - MIKROTIK_PASSWORD=admin
-    volumes:
-      - sqlite_data:/app/data
+    depends_on:
+      - db
     restart: unless-stopped
     networks:
       - smartwifi_net
@@ -40,4 +52,4 @@ networks:
     driver: bridge
 
 volumes:
-  sqlite_data:
+  postgres_data:
