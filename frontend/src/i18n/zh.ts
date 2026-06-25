@@ -129,6 +129,7 @@ const zh: TranslationKeys = {
   set_dash_new_pass: '新密码',
   set_dash_update_pass: '更新密码',
   set_dash_pass_ok: '密码更新成功',
+  mod_logout_title: '登出',
   val_ip_required: 'IP 地址为必填项',
   val_ip_format: '无效的 IPv4 格式（例如：192.168.88.1）',
   val_ip_range: '每个八位字节必须在 0-255 之间',

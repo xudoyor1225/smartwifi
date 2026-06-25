@@ -145,6 +145,7 @@ export type TranslationKeys = {
   set_dash_new_pass: string;
   set_dash_update_pass: string;
   set_dash_pass_ok: string;
+  mod_logout_title: string;
   // Validation
   val_ip_required: string;
   val_ip_format: string;

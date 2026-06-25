@@ -126,6 +126,7 @@ const en: TranslationKeys = {
   set_dash_new_pass: 'New Password',
   set_dash_update_pass: 'Update Password',
   set_dash_pass_ok: 'Password updated successfully!',
+  mod_logout_title: 'Logout',
   set_info_title: 'MikroTik router configuration',
   set_info_sub: 'RouterOS API must be enabled on the router. Via WinBox: IP → Services → api → enable',
   set_docs: 'MikroTik Documentation',

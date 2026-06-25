@@ -38,6 +38,7 @@ export interface LocalDevice {
   is_gateway: boolean;
   is_responsive: boolean;
   bytes_total: number;
+  is_blocked?: boolean;
 }
 
 export interface TrafficPoint {

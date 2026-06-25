@@ -129,6 +129,7 @@ const es: TranslationKeys = {
   set_dash_new_pass: 'Nueva contraseña',
   set_dash_update_pass: 'Actualizar contraseña',
   set_dash_pass_ok: 'Contraseña actualizada correctamente',
+  mod_logout_title: 'Cerrar sesión',
   val_ip_required: 'La dirección IP es obligatoria',
   val_ip_format: 'Formato IPv4 inválido (ej: 192.168.88.1)',
   val_ip_range: 'Cada octeto debe estar entre 0-255',
