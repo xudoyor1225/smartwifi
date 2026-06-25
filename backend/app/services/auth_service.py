@@ -6,8 +6,9 @@ with 30-minute sliding expiry, and credential verification.
 
 from datetime import datetime, timedelta, timezone
 
+import asyncio
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,16 +17,14 @@ from app.models.admin import Admin
 
 settings = get_settings()
 
-# bcrypt with cost factor 12
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
-
+# (Passlib removed)
 
 class AuthService:
     """Service for authentication operations."""
 
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password using bcrypt with cost factor 12.
+        """Hash a password using bcrypt.
 
         Args:
             password: The plain text password to hash.
@@ -33,7 +32,9 @@ class AuthService:
         Returns:
             The bcrypt hash string.
         """
-        return pwd_context.hash(password)
+        salt = bcrypt.gensalt(rounds=12)
+        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return hashed.decode('utf-8')
 
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -46,7 +47,10 @@ class AuthService:
         Returns:
             True if the password matches, False otherwise.
         """
-        return pwd_context.verify(plain_password, hashed_password)
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
 
     @staticmethod
     def create_token(admin_id: str, tenant_id: str) -> str:
@@ -116,7 +120,12 @@ class AuthService:
         admin = result.scalar_one_or_none()
         if admin is None:
             return None
-        if not AuthService.verify_password(password, admin.password_hash):
+            
+        # Run bcrypt in a thread pool to avoid blocking the asyncio event loop
+        is_valid = await asyncio.to_thread(
+            AuthService.verify_password, password, admin.password_hash
+        )
+        if not is_valid:
             return None
         return admin
 
@@ -146,6 +155,11 @@ class AuthService:
         admin = result.scalar_one_or_none()
         if admin is None:
             return None
-        if not AuthService.verify_password(password, admin.password_hash):
+            
+        # Run bcrypt in a thread pool to avoid blocking the asyncio event loop
+        is_valid = await asyncio.to_thread(
+            AuthService.verify_password, password, admin.password_hash
+        )
+        if not is_valid:
             return None
         return admin
