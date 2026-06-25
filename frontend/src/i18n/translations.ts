@@ -139,6 +139,12 @@ export type TranslationKeys = {
   set_info_title: string;
   set_info_sub: string;
   set_docs: string;
+  set_dash_sec_title: string;
+  set_dash_sec_sub: string;
+  set_dash_curr_pass: string;
+  set_dash_new_pass: string;
+  set_dash_update_pass: string;
+  set_dash_pass_ok: string;
   // Validation
   val_ip_required: string;
   val_ip_format: string;

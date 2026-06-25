@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -94,7 +94,6 @@ export default function NetworkMap() {
       const y = 300 + Math.floor(index / 4) * 100;
       
       const isBlocked = dev.is_blocked;
-      const borderColor = isBlocked ? '#EF4444' : '#6366F1';
       
       const type = dev.hostname?.toLowerCase().includes('tv') ? 'tv' 
                  : dev.hostname?.toLowerCase().includes('mac') ? 'laptop'
