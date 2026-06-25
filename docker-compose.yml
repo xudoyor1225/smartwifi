@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - smartwifi_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    # Ports are not strictly needed here since frontend proxies requests internally,
+    # but we map it just in case direct API access is required from host.
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - JWT_SECRET_KEY=yoursecretkeyhere_change_it_in_prod
+      - MIKROTIK_HOST=192.168.88.1
+      - MIKROTIK_USER=admin
+      - MIKROTIK_PASSWORD=admin
+    volumes:
+      - sqlite_data:/app/data
+    restart: unless-stopped
+    networks:
+      - smartwifi_net
+
+networks:
+  smartwifi_net:
+    driver: bridge
+
+volumes:
+  sqlite_data:
