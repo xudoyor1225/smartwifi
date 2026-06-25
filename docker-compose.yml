@@ -24,6 +24,8 @@ services:
     environment:
       - ENVIRONMENT=production
       - JWT_SECRET_KEY=yoursecretkeyhere_change_it_in_prod
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/smartwifi.db
+      - DATABASE_URL_SYNC=sqlite:////app/data/smartwifi.db
       - MIKROTIK_HOST=192.168.88.1
       - MIKROTIK_USER=admin
       - MIKROTIK_PASSWORD=admin
