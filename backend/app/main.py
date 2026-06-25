@@ -196,12 +196,19 @@ def create_app() -> FastAPI:
 
 def _register_exception_handlers(app: FastAPI) -> None:
     """Register global exception handlers for structured error responses."""
-    from fastapi import Request
+    from fastapi import Request, HTTPException
     from fastapi.responses import JSONResponse
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         """Handle unhandled exceptions with a structured error response."""
+        if isinstance(exc, HTTPException):
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=exc.headers,
+            )
+
         error_name = type(exc).__name__
 
         # Database connection errors
