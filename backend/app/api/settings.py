@@ -159,7 +159,7 @@ async def test_router_connection(
     # Update connection status
     if connection_result.status == ConnectionStatus.SUCCESS:
         config.connection_status = "connected"
-        config.last_connected = datetime.now(timezone.utc)
+        config.last_connected = datetime.now(timezone.utc).replace(tzinfo=None)
     else:
         config.connection_status = "disconnected"
 

@@ -130,8 +130,8 @@ async def login(
         )
         db.add(login_attempt)
 
-        # Update last_login timestamp
-        admin.last_login = datetime.now(timezone.utc)
+        # Update last_login timestamp (timezone-naive for asyncpg)
+        admin.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
         await db.commit()
     except Exception:
         pass
