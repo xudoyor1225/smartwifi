@@ -12,14 +12,20 @@ Works WITHOUT a MikroTik router for local-only mode.
 """
 
 import asyncio
+import concurrent.futures
 import ipaddress
+import json
 import logging
 import re
 import socket
 import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from typing import Optional
+
+# Dedicated thread pool for blocking network I/O to avoid starving the default asyncio thread pool
+_network_io_pool = concurrent.futures.ThreadPoolExecutor(max_workers=30)
 
 import psutil
 
@@ -418,8 +424,10 @@ class NetworkMonitor:
         targets = [d for d in devices if not d.is_self and not d.is_gateway]
         if targets:
             try:
+                loop = asyncio.get_running_loop()
                 ping_tasks = [
-                    asyncio.to_thread(self._ping_device, d.ip_address) for d in targets
+                    loop.run_in_executor(_network_io_pool, self._ping_device, d.ip_address)
+                    for d in targets
                 ]
                 ping_results = await asyncio.wait_for(
                     asyncio.gather(*ping_tasks, return_exceptions=True),
@@ -437,19 +445,20 @@ class NetworkMonitor:
         no_hostname = [d for d in devices if not d.hostname and not d.is_self]
         if no_hostname:
             try:
+                loop = asyncio.get_running_loop()
                 hostname_tasks = [
-                    asyncio.to_thread(self._resolve_hostname, d.ip_address)
+                    loop.run_in_executor(_network_io_pool, self._resolve_hostname, d.ip_address)
                     for d in no_hostname
                 ]
                 hostname_results = await asyncio.wait_for(
                     asyncio.gather(*hostname_tasks, return_exceptions=True),
                     timeout=4.0,
                 )
-                for d, hostname in zip(no_hostname, hostname_results):
-                    if hostname and not isinstance(hostname, Exception):
-                        d.hostname = hostname
+                for d, result in zip(no_hostname, hostname_results):
+                    if isinstance(result, str) and result:
+                        d.hostname = result
                         if d.mac_address in self._device_cache:
-                            self._device_cache[d.mac_address].hostname = hostname
+                            self._device_cache[d.mac_address].hostname = result
             except Exception as e:
                 logger.debug(f"Background hostname resolution failed: {e}")
 
