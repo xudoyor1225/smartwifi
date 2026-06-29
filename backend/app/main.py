@@ -45,12 +45,24 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     app.state.settings = settings
 
-    # 1. Create SQLite tables
-    await create_tables()
-    logger.info("Database tables created/verified")
-
-    # 2. Seed default admin if not exists
-    await _seed_default_data()
+    # 1. Create SQLite tables and Seed data with retries
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            await create_tables()
+            logger.info("Database tables created/verified")
+            
+            # 2. Seed default admin if not exists
+            await _seed_default_data()
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Database initialization failed (attempt {attempt + 1}/{max_retries}): {e}. Retrying in 3 seconds...")
+                import asyncio
+                await asyncio.sleep(3)
+            else:
+                logger.error(f"Failed to initialize database after {max_retries} attempts: {e}")
+                raise
 
     # 3. Initialize Redis (optional - app works without it)
     try:

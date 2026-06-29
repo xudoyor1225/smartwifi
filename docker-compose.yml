@@ -24,12 +24,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smartwifi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - smartwifi_net
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - smartwifi_net
 
@@ -49,8 +59,10 @@ services:
       - MIKROTIK_USER=admin
       - MIKROTIK_PASSWORD=admin
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - smartwifi_net
