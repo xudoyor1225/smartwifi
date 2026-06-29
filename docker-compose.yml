@@ -27,6 +27,12 @@ services:
     networks:
       - smartwifi_net
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - smartwifi_net
+
   backend:
     build:
       context: ./backend
@@ -38,11 +44,13 @@ services:
       - JWT_SECRET_KEY=yoursecretkeyhere_change_it_in_prod
       - DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@db:5432/smartwifi
       - DATABASE_URL_SYNC=postgresql://postgres:postgrespassword@db:5432/smartwifi
+      - REDIS_URL=redis://redis:6379/0
       - MIKROTIK_HOST=192.168.88.1
       - MIKROTIK_USER=admin
       - MIKROTIK_PASSWORD=admin
     depends_on:
       - db
+      - redis
     restart: unless-stopped
     networks:
       - smartwifi_net
